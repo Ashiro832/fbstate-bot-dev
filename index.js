@@ -3,15 +3,25 @@ const login = require("fca-unofficial");
 
 const app = express();
 
+// 🌐 Web server (IMPORTANT for Render)
 app.get("/", (req, res) => {
   res.send("Bot is running");
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Server running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
 
-const appState = JSON.parse(process.env.FBSTATE);
+// 🤖 FBSTATE LOGIN
+let appState;
+
+try {
+  appState = JSON.parse(process.env.FBSTATE);
+} catch (e) {
+  console.error("FBSTATE ERROR");
+}
 
 login({ appState }, (err, api) => {
   if (err) return console.error("LOGIN ERROR:", err);
@@ -20,8 +30,6 @@ login({ appState }, (err, api) => {
 
   api.listenMqtt((err, event) => {
     if (err) return console.error(err);
-
-    console.log("EVENT:", event);
 
     if (event.type === "message") {
       api.sendMessage("yo 👀", event.threadID);
