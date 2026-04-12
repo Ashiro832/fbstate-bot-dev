@@ -7,41 +7,34 @@ app.get("/", (req, res) => {
   res.send("Bot is alive...");
 });
 
+// ⚡ START SERVER FIRST (IMPORTANT)
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
 
-// 🔑 SAFER FBSTATE PARSE
-let appState;
-try {
-  if (!process.env.FBSTATE) {
-    console.error("FBSTATE is missing in environment variables");
-  } else {
+// ⚡ LOGIN RUNS AFTER (NON-BLOCKING STYLE)
+setTimeout(() => {
+  let appState;
+
+  try {
     appState = JSON.parse(process.env.FBSTATE);
-  }
-} catch (e) {
-  console.error("FBSTATE JSON ERROR:", e.message);
-}
-
-// 🤖 LOGIN
-login({ appState }, (err, api) => {
-  if (err) {
-    console.error("LOGIN ERROR:", err);
-    return;
+  } catch (e) {
+    return console.error("FBSTATE ERROR:", e.message);
   }
 
-  console.log("Bot logged in successfully");
+  login({ appState }, (err, api) => {
+    if (err) return console.error("LOGIN ERROR:", err);
 
-  api.listenMqtt((err, event) => {
-    if (err) {
-      console.error("LISTEN ERROR:", err);
-      return;
-    }
+    console.log("Bot logged in");
 
-    if (event.type === "message") {
-      api.sendMessage("yo 👀", event.threadID);
-    }
+    api.listenMqtt((err, event) => {
+      if (err) return console.error(err);
+
+      if (event.type === "message") {
+        api.sendMessage("yo 👀", event.threadID);
+      }
+    });
   });
-});
+
+}, 2000); // small delay prevents Render timeout
