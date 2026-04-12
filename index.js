@@ -1,46 +1,18 @@
-const express = require("express");
-const app = express();
-
-app.get("/", (req, res) => {
-  res.send("Bot is alive 🚀");
-});
-
-const PORT = process.env.PORT;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on port", PORT);
-});
-
-console.log("Bot loaded...");
-
-// 🧠 COMMANDS STORAGE
-let commands = {
-  help: `
-🤖 COMMANDS:
-!help - show commands
-!ping - test bot
-!cmd install <name> <text>
-!cmd load <name>
-!cmd unload <name>
-`,
-  ping: "🏓 pong!"
-};
-
-// 🚀 SHORT ROUTE SYSTEM
 app.get("/:cmd", (req, res) => {
   let msg = req.params.cmd.toLowerCase();
-
-  // remove "!"
-  if (msg.startsWith("!")) msg = msg.slice(1);
 
   let parts = msg.split(" ");
   let main = parts[0];
 
   // HELP
-  if (main === "help") return res.send(commands.help);
+  if (main === "help") {
+    return res.send(commands.help);
+  }
 
   // PING
-  if (main === "ping") return res.send(commands.ping);
+  if (main === "ping") {
+    return res.send(commands.ping);
+  }
 
   // CMD SYSTEM
   if (main === "cmd") {
@@ -49,7 +21,7 @@ app.get("/:cmd", (req, res) => {
     if (sub === "install") {
       let name = parts[2];
       let text = parts.slice(3).join(" ");
-      if (!name || !text) return res.send("Usage: !cmd install <name> <text>");
+      if (!name || !text) return res.send("Usage: cmd install <name> <text>");
 
       commands[name] = text;
       return res.send(`✅ Installed "${name}"`);
@@ -65,11 +37,9 @@ app.get("/:cmd", (req, res) => {
       delete commands[name];
       return res.send(`🗑️ Removed "${name}"`);
     }
-
-    return res.send("❌ Unknown cmd action");
   }
 
-  // CUSTOM COMMANDS (!hello etc)
+  // CUSTOM COMMANDS
   if (commands[main]) {
     return res.send(commands[main]);
   }
