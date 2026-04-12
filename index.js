@@ -1,17 +1,14 @@
 const express = require("express");
 const app = express();
 
-// 🌐 Web server (REQUIRED for Render)
+// Render gives this automatically
+const PORT = process.env.PORT || 10000;
+
 app.get("/", (req, res) => {
-  res.send("Bot is alive on Render 🚀");
+  res.send("Bot is alive 🚀");
 });
 
-// 🚨 IMPORTANT: Render PORT
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+// IMPORTANT: bind to 0.0.0.0
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-// 🤖 OPTIONAL BOT LOGIC PLACEHOLDER
-console.log("Bot script loaded...");
