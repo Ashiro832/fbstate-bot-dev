@@ -13,37 +13,66 @@ app.listen(PORT, "0.0.0.0", () => {
 
 console.log("Bot loaded...");
 
-// 🤖 PREFIX SYSTEM
-const PREFIX = "!";
-
-app.get("/cmd", (req, res) => {
-  let msg = req.query.msg;
-
-  if (!msg) return res.send("Use !help (example: /cmd?msg=!help)");
-
-  // remove prefix
-  if (msg.startsWith(PREFIX)) {
-    msg = msg.slice(PREFIX.length);
-  }
-
-  msg = msg.toLowerCase();
-
-  if (msg === "help") {
-    return res.send(`
-🤖 Bot Commands:
+// 🧠 COMMANDS STORAGE
+let commands = {
+  help: `
+🤖 COMMANDS:
 !help - show commands
-!ping - check bot
-!info - bot info
-    `);
+!ping - test bot
+!cmd install <name> <text>
+!cmd load <name>
+!cmd unload <name>
+`,
+  ping: "🏓 pong!"
+};
+
+// 🚀 SHORT ROUTE SYSTEM
+app.get("/:cmd", (req, res) => {
+  let msg = req.params.cmd.toLowerCase();
+
+  // remove "!"
+  if (msg.startsWith("!")) msg = msg.slice(1);
+
+  let parts = msg.split(" ");
+  let main = parts[0];
+
+  // HELP
+  if (main === "help") return res.send(commands.help);
+
+  // PING
+  if (main === "ping") return res.send(commands.ping);
+
+  // CMD SYSTEM
+  if (main === "cmd") {
+    let sub = parts[1];
+
+    if (sub === "install") {
+      let name = parts[2];
+      let text = parts.slice(3).join(" ");
+      if (!name || !text) return res.send("Usage: !cmd install <name> <text>");
+
+      commands[name] = text;
+      return res.send(`✅ Installed "${name}"`);
+    }
+
+    if (sub === "load") {
+      let name = parts[2];
+      return res.send(commands[name] || "❌ Not found");
+    }
+
+    if (sub === "unload") {
+      let name = parts[2];
+      delete commands[name];
+      return res.send(`🗑️ Removed "${name}"`);
+    }
+
+    return res.send("❌ Unknown cmd action");
   }
 
-  if (msg === "ping") {
-    return res.send("🏓 pong!");
+  // CUSTOM COMMANDS (!hello etc)
+  if (commands[main]) {
+    return res.send(commands[main]);
   }
 
-  if (msg === "info") {
-    return res.send("😎 I am your Render bot with prefix system!");
-  }
-
-  res.send("❌ Unknown command. Try !help");
+  res.send("❌ Unknown command");
 });
